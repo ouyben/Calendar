@@ -28,6 +28,8 @@ import java.util.List;
  */
 public class ScheduleLayout extends FrameLayout {
 
+    private static final String TAG = "ScheduleLayout";
+
     private final int DEFAULT_MONTH = 0;
     private final int DEFAULT_WEEK = 1;
 
@@ -134,6 +136,7 @@ public class ScheduleLayout extends FrameLayout {
 
     /**
      * TODO: 设置日历显示标示数据
+     *
      * @param calendarBeen
      */
     public void setCalendarList(List<CalendarBean> calendarBeen) {
@@ -159,7 +162,7 @@ public class ScheduleLayout extends FrameLayout {
             newWeekView.invalidate();
         }
         if (mOnCalendarClickListener != null) {
-            mOnCalendarClickListener.onClickDate(mCurrentSelectYear, mCurrentSelectMonth+1, mCurrentSelectDay);
+            mOnCalendarClickListener.onClickDate(mCurrentSelectYear, mCurrentSelectMonth + 1, mCurrentSelectDay);
         }
     }
 
@@ -185,7 +188,7 @@ public class ScheduleLayout extends FrameLayout {
             monthView.invalidate();
         }
         if (mOnCalendarClickListener != null) {
-            mOnCalendarClickListener.onClickDate(mCurrentSelectYear, mCurrentSelectMonth+1, mCurrentSelectDay);
+            mOnCalendarClickListener.onClickDate(mCurrentSelectYear, mCurrentSelectMonth + 1, mCurrentSelectDay);
         }
     }
 
@@ -193,7 +196,6 @@ public class ScheduleLayout extends FrameLayout {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int height = MeasureSpec.getSize(heightMeasureSpec);
         resetViewHeight(rlScheduleList, height - mRowSize);
-        resetViewHeight(this, height);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 

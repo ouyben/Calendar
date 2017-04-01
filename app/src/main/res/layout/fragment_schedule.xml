@@ -6,8 +6,8 @@
     <include
         layout="@layout/layout_schedule"/>
 
-    <include
-        layout="@layout/main_input"/>
+    <!--<include
+        layout="@layout/main_input"/>-->
 
 </RelativeLayout>
 

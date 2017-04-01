@@ -4,31 +4,22 @@ import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.RelativeLayout;
 
 import com.jeek.calendar.R;
 import com.jeek.calendar.activity.MainActivity;
 import com.jeek.calendar.adapter.ScheduleAdapter;
-import com.jimmy.common.bean.Schedule;
 import com.jeek.calendar.dialog.SelectDateDialog;
-import com.jeek.calendar.task.schedule.AddScheduleTask;
 import com.jeek.calendar.task.schedule.LoadScheduleTask;
 import com.jeek.calendar.widget.calendar.OnCalendarClickListener;
 import com.jeek.calendar.widget.calendar.schedule.ScheduleLayout;
 import com.jeek.calendar.widget.calendar.schedule.ScheduleRecyclerView;
 import com.jimmy.common.base.app.BaseFragment;
+import com.jimmy.common.bean.Schedule;
 import com.jimmy.common.listener.OnTaskFinishedListener;
-import com.jimmy.common.util.DeviceUtils;
-import com.jimmy.common.util.ToastUtils;
 
 import java.util.Calendar;
 import java.util.List;
@@ -41,7 +32,7 @@ public class ScheduleFragment extends BaseFragment implements OnCalendarClickLis
 
     private ScheduleLayout slSchedule;
     private ScheduleRecyclerView rvScheduleList;
-    private EditText etInputContent;
+//    private EditText etInputContent;
     private RelativeLayout rLNoTask;
 
     private ScheduleAdapter mScheduleAdapter;
@@ -61,11 +52,11 @@ public class ScheduleFragment extends BaseFragment implements OnCalendarClickLis
     @Override
     protected void bindView() {
         slSchedule = searchViewById(R.id.slSchedule);
-        etInputContent = searchViewById(R.id.etInputContent);
+//        etInputContent = searchViewById(R.id.etInputContent);
         rLNoTask = searchViewById(R.id.rlNoTask);
         slSchedule.setOnCalendarClickListener(this);
-        searchViewById(R.id.ibMainClock).setOnClickListener(this);
-        searchViewById(R.id.ibMainOk).setOnClickListener(this);
+//        searchViewById(R.id.ibMainClock).setOnClickListener(this);
+//        searchViewById(R.id.ibMainOk).setOnClickListener(this);
         initScheduleList();
         initBottomInputBar();
     }
@@ -110,28 +101,28 @@ public class ScheduleFragment extends BaseFragment implements OnCalendarClickLis
     }
 
     private void initBottomInputBar() {
-        etInputContent.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                etInputContent.setGravity(s.length() == 0 ? Gravity.CENTER : Gravity.CENTER_VERTICAL);
-            }
-        });
-        etInputContent.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                return false;
-            }
-        });
+//        etInputContent.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
+//                etInputContent.setGravity(s.length() == 0 ? Gravity.CENTER : Gravity.CENTER_VERTICAL);
+//            }
+//        });
+//        etInputContent.setOnKeyListener(new View.OnKeyListener() {
+//            @Override
+//            public boolean onKey(View v, int keyCode, KeyEvent event) {
+//                return false;
+//            }
+//        });
     }
 
     @Override
@@ -151,13 +142,13 @@ public class ScheduleFragment extends BaseFragment implements OnCalendarClickLis
     }
 
     private void closeSoftInput() {
-        etInputContent.clearFocus();
-        DeviceUtils.closeSoftInput(mActivity, etInputContent);
+//        etInputContent.clearFocus();
+//        DeviceUtils.closeSoftInput(mActivity, etInputContent);
     }
 
     private void addSchedule() {
-        String content = etInputContent.getText().toString();
-        if (TextUtils.isEmpty(content)) {
+//        String content = etInputContent.getText().toString();
+       /* if (TextUtils.isEmpty(content)) {
             ToastUtils.showShortToast(mActivity, R.string.schedule_input_content_is_no_null);
         } else {
             closeSoftInput();
@@ -180,7 +171,7 @@ public class ScheduleFragment extends BaseFragment implements OnCalendarClickLis
                     }
                 }
             }, schedule).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
+        }*/
     }
 
     private void setCurrentSelectDate(int year, int month, int day) {
