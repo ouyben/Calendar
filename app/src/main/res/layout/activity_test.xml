@@ -10,6 +10,11 @@
     android:orientation="vertical"
     tools:context="com.jeek.calendar.activity.TestActivity">
 
+    <com.jeek.calendar.widget.calendar.WeekBarView
+        android:layout_width="match_parent"
+        android:background="@color/calendar_bg_color"
+        android:layout_height="40dp"/>
+
     <com.jeek.calendar.widget.calendar.schedule.ScheduleLayout
         android:id="@+id/slSchedule"
         android:layout_width="match_parent"
