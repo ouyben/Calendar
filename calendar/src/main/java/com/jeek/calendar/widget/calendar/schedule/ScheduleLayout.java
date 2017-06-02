@@ -12,9 +12,11 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import com.jeek.calendar.library.R;
+import com.jeek.calendar.widget.SaveUtils;
 import com.jeek.calendar.widget.bean.CalendarBean;
 import com.jeek.calendar.widget.calendar.CalendarUtils;
 import com.jeek.calendar.widget.calendar.OnCalendarClickListener;
+import com.jeek.calendar.widget.calendar.OnCalendarLongClickListener;
 import com.jeek.calendar.widget.calendar.month.MonthCalendarView;
 import com.jeek.calendar.widget.calendar.month.MonthView;
 import com.jeek.calendar.widget.calendar.week.WeekCalendarView;
@@ -27,8 +29,6 @@ import java.util.List;
  * Created by Jimmy on 2016/10/7 0007.
  */
 public class ScheduleLayout extends FrameLayout {
-
-    private static final String TAG = "ScheduleLayout";
 
     private final int DEFAULT_MONTH = 0;
     private final int DEFAULT_WEEK = 1;
@@ -51,7 +51,25 @@ public class ScheduleLayout extends FrameLayout {
 
     private ScheduleState mState;
     private OnCalendarClickListener mOnCalendarClickListener;
+    private OnCalendarLongClickListener mOnCalendarLongClickListener;
     private GestureDetector mGestureDetector;
+
+    public static List<CalendarBean> getCalendarBeen() {
+        List<CalendarBean> calendarBeen = (List<CalendarBean>) SaveUtils.getInstance().getValue("CalendarBean");
+        return calendarBeen;
+    }
+
+    public void setCalendarBeen(List<CalendarBean> calendarBeen) {
+        SaveUtils.getInstance().setValue("CalendarBean", calendarBeen);
+        MonthView monthView = mcvCalendar.getCurrentMonthView();
+        if (monthView != null) {
+            monthView.invalidate();
+        }
+        WeekView weekView = wcvCalendar.getCurrentWeekView();
+        if (weekView != null) {
+            weekView.invalidate();
+        }
+    }
 
     public ScheduleLayout(Context context) {
         this(context, null);
@@ -99,6 +117,8 @@ public class ScheduleLayout extends FrameLayout {
     private void bindingMonthAndWeekCalendar() {
         mcvCalendar.setOnCalendarClickListener(mMonthCalendarClickListener);
         wcvCalendar.setOnCalendarClickListener(mWeekCalendarClickListener);
+        wcvCalendar.setOnLongCalendarClickListener(mMonthLongCalendarClickListener);
+        mcvCalendar.setOnLongCalendarClickListener(mWeekLongCalendarClickListener);
         // 初始化视图
         if (mDefaultView == DEFAULT_MONTH) {
             wcvCalendar.setVisibility(INVISIBLE);
@@ -134,22 +154,52 @@ public class ScheduleLayout extends FrameLayout {
         }
     };
 
-    /**
-     * TODO: 设置日历显示标示数据
-     *
-     * @param calendarBeen
-     */
-    public void setCalendarList(List<CalendarBean> calendarBeen) {
-        MonthView monthView = mcvCalendar.getCurrentMonthView();
-        if (monthView != null) {
-            monthView.setCalendarList(calendarBeen);
+    private OnCalendarLongClickListener mMonthLongCalendarClickListener = new OnCalendarLongClickListener() {
+        @Override
+        public void onLongClickDate(int year, int month, int day) {
+            wcvCalendar.setOnCalendarClickListener(null);
+            int weeks = CalendarUtils.getWeeksAgo(mCurrentSelectYear, mCurrentSelectMonth, mCurrentSelectDay, year, month, day);
+            resetCurrentSelectDate(year, month, day);
+            if (weeks != 0) {
+                int position = wcvCalendar.getCurrentItem() + weeks;
+                wcvCalendar.setCurrentItem(position, false);
+            }
+            resetWeekView();
+            mOnCalendarLongClickListener.onLongClickDate(year, month, day);
         }
-        WeekView weekView = wcvCalendar.getCurrentWeekView();
-        if (weekView != null) {
-            weekView.setCalendarList(calendarBeen);
+    };
+
+    private OnCalendarLongClickListener mWeekLongCalendarClickListener = new OnCalendarLongClickListener() {
+        @Override
+        public void onLongClickDate(int year, int month, int day) {
+            mcvCalendar.setOnCalendarClickListener(null);
+            int months = CalendarUtils.getMonthsAgo(mCurrentSelectYear, mCurrentSelectMonth, year, month);
+            resetCurrentSelectDate(year, month, day);
+            if (months != 0) {
+                int position = mcvCalendar.getCurrentItem() + months;
+                mcvCalendar.setCurrentItem(position, false);
+            }
+            resetMonthView();
+            mOnCalendarLongClickListener.onLongClickDate(year, month, day);
         }
-        invalidate();
-    }
+    };
+
+    //    /**
+    //     * TODO: 设置日历显示标示数据
+    //     *
+    //     * @param calendarBeen
+    //     */
+    //    public void setCalendarList(List<CalendarBean> calendarBeen) {
+    //        MonthView monthView = mcvCalendar.getCurrentMonthView();
+    //        if (monthView != null) {
+    //            monthView.setCalendarList(calendarBeen);
+    //        }
+    //        WeekView weekView = wcvCalendar.getCurrentWeekView();
+    //        if (weekView != null) {
+    //            weekView.setCalendarList(calendarBeen);
+    //        }
+    //        invalidate();
+    //    }
 
     private void resetWeekView() {
         WeekView weekView = wcvCalendar.getCurrentWeekView();
@@ -196,6 +246,7 @@ public class ScheduleLayout extends FrameLayout {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int height = MeasureSpec.getSize(heightMeasureSpec);
         resetViewHeight(rlScheduleList, height - mRowSize);
+        //        resetViewHeight(this, height);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
@@ -409,6 +460,12 @@ public class ScheduleLayout extends FrameLayout {
     public void setOnCalendarClickListener(OnCalendarClickListener onCalendarClickListener) {
         mOnCalendarClickListener = onCalendarClickListener;
     }
+
+
+    public void setOnCalendarLongClickListener(OnCalendarLongClickListener mOnCalendarLongClickListener) {
+        this.mOnCalendarLongClickListener = mOnCalendarLongClickListener;
+    }
+
 
     public ScheduleRecyclerView getSchedulerRecyclerView() {
         return rvScheduleList;

@@ -57,16 +57,16 @@ public class TestActivity extends AppCompatActivity {
     private void setData() {
         List<CalendarBean> been = new ArrayList<>();
         // 设置数字
-//        been.add(new CalendarBean(2017, 4, 22, CalendarBean.KEY_TYPE_NUMBER, 1));
-//        been.add(new CalendarBean(2017, 4, 23, CalendarBean.KEY_TYPE_NUMBER, 2));
-//        been.add(new CalendarBean(2017, 4, 24, CalendarBean.KEY_TYPE_NUMBER, 4));
-//        been.add(new CalendarBean(2017, 4, 25, CalendarBean.KEY_TYPE_NUMBER, 5));
+        //        been.add(new CalendarBean(2017, 4, 22, CalendarBean.KEY_TYPE_NUMBER, 1));
+        //        been.add(new CalendarBean(2017, 4, 23, CalendarBean.KEY_TYPE_NUMBER, 2));
+        //        been.add(new CalendarBean(2017, 4, 24, CalendarBean.KEY_TYPE_NUMBER, 4));
+        //        been.add(new CalendarBean(2017, 4, 25, CalendarBean.KEY_TYPE_NUMBER, 5));
         // 设置√, ×
-                        been.add(new CalendarBean(2017, 4, 22,CalendarBean.KEY_TYPE_TURE_OR_FALSE, CalendarBean.KEY_STATE_FALSE));
-                        been.add(new CalendarBean(2017, 4, 23, CalendarBean.KEY_TYPE_TURE_OR_FALSE,CalendarBean.KEY_STATE_FALSE));
-                        been.add(new CalendarBean(2017, 4, 24, CalendarBean.KEY_TYPE_TURE_OR_FALSE,CalendarBean.KEY_STATE_TRUE));
-                        been.add(new CalendarBean(2017, 4, 25,CalendarBean.KEY_TYPE_TURE_OR_FALSE, CalendarBean.KEY_STATE_TRUE));
-        mSlSchedule.setCalendarList(been);
+        been.add(new CalendarBean(2017, 4, 22, CalendarBean.KEY_TYPE_TURE_OR_FALSE, CalendarBean.KEY_STATE_FALSE));
+        been.add(new CalendarBean(2017, 4, 23, CalendarBean.KEY_TYPE_TURE_OR_FALSE, CalendarBean.KEY_STATE_FALSE));
+        been.add(new CalendarBean(2017, 4, 24, CalendarBean.KEY_TYPE_TURE_OR_FALSE, CalendarBean.KEY_STATE_TRUE));
+        been.add(new CalendarBean(2017, 4, 25, CalendarBean.KEY_TYPE_TURE_OR_FALSE, CalendarBean.KEY_STATE_TRUE));
+        mSlSchedule.setCalendarBeen(been);
     }
 
     private void initView() {

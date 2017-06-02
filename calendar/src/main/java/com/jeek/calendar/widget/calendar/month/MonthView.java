@@ -18,6 +18,7 @@ import com.jeek.calendar.library.R;
 import com.jeek.calendar.widget.bean.CalendarBean;
 import com.jeek.calendar.widget.calendar.CalendarUtils;
 import com.jeek.calendar.widget.calendar.LunarCalendarUtils;
+import com.jeek.calendar.widget.calendar.schedule.ScheduleLayout;
 import com.jimmy.common.data.ScheduleDao;
 
 import java.util.Calendar;
@@ -61,7 +62,6 @@ public class MonthView extends View {
     private Bitmap mRestBitmap, mWorkBitmap;
 
     // 日程数据
-    private List<CalendarBean> mCalendarBeen;
     private int mScheCircleRadius = 20;// 日程背景圆半径
     private int mScheTxtSize = 28;//日程文字大小
 
@@ -86,15 +86,6 @@ public class MonthView extends View {
         initTaskHint();
     }
 
-    /**
-     * TODO:设置日历标示数据
-     *
-     * @param calendarBeen
-     */
-    public void setCalendarList(List<CalendarBean> calendarBeen) {
-        mCalendarBeen = calendarBeen;
-        invalidate();
-    }
 
     private void initTaskHint() {
         if (mIsShowHint) {
@@ -123,13 +114,13 @@ public class MonthView extends View {
         if (array != null) {
             mSelectDayColor = array.getColor(R.styleable.MonthCalendarView_month_selected_text_color, Color.parseColor("#FFFFFF"));
             mSelectBGColor = array.getColor(R.styleable.MonthCalendarView_month_selected_circle_color, Color.parseColor("#E8E8E8"));
-            mSelectBGTodayColor = array.getColor(R.styleable.MonthCalendarView_month_selected_circle_today_color, Color.parseColor("#FF8594"));
+            mSelectBGTodayColor = array.getColor(R.styleable.MonthCalendarView_month_selected_circle_today_color, Color.parseColor("#27b5f3"));
             mNormalDayColor = array.getColor(R.styleable.MonthCalendarView_month_normal_text_color, Color.parseColor("#575471"));
-            mCurrentDayColor = array.getColor(R.styleable.MonthCalendarView_month_today_text_color, Color.parseColor("#FF8594"));
+            mCurrentDayColor = array.getColor(R.styleable.MonthCalendarView_month_today_text_color, Color.parseColor("#e53333"));
             mHintCircleColor = array.getColor(R.styleable.MonthCalendarView_month_hint_circle_color, Color.parseColor("#FE8595"));
             mLastOrNextMonthTextColor = array.getColor(R.styleable.MonthCalendarView_month_last_or_next_month_text_color, Color.parseColor("#ACA9BC"));
             mLunarTextColor = array.getColor(R.styleable.MonthCalendarView_month_lunar_text_color, Color.parseColor("#ACA9BC"));
-            mHolidayTextColor = array.getColor(R.styleable.MonthCalendarView_month_holiday_color, Color.parseColor("#A68BFF"));
+            mHolidayTextColor = array.getColor(R.styleable.MonthCalendarView_month_holiday_color, Color.parseColor("#42bf88"));
             mDaySize = array.getInteger(R.styleable.MonthCalendarView_month_day_text_size, 13);
             mLunarTextSize = array.getInteger(R.styleable.MonthCalendarView_month_day_lunar_text_size, 8);
             mIsShowHint = array.getBoolean(R.styleable.MonthCalendarView_month_show_task_hint, true);
@@ -138,12 +129,12 @@ public class MonthView extends View {
         } else {
             mSelectDayColor = Color.parseColor("#FFFFFF");
             mSelectBGColor = Color.parseColor("#E8E8E8");
-            mSelectBGTodayColor = Color.parseColor("#FF8594");
+            mSelectBGTodayColor = Color.parseColor("#27b5f3");
             mNormalDayColor = Color.parseColor("#575471");
-            mCurrentDayColor = Color.parseColor("#FF8594");
+            mCurrentDayColor = Color.parseColor("#e53333");
             mHintCircleColor = Color.parseColor("#FE8595");
             mLastOrNextMonthTextColor = Color.parseColor("#ACA9BC");
-            mHolidayTextColor = Color.parseColor("#A68BFF");
+            mHolidayTextColor = Color.parseColor("#42bf88");
             mDaySize = 13;
             mLunarTextSize = 8;
             mIsShowHint = true;
@@ -202,9 +193,9 @@ public class MonthView extends View {
         initSize();
         clearData();
         drawLastMonth(canvas);
-        drawThisMonth(canvas);
+        int selected[] = drawThisMonth(canvas);
         drawNextMonth(canvas);
-        drawLunarText(canvas);
+        drawLunarText(canvas, selected);
         drawHoliday(canvas);
     }
 
@@ -244,8 +235,9 @@ public class MonthView extends View {
         }
     }
 
-    private void drawThisMonth(Canvas canvas) {
+    private int[] drawThisMonth(Canvas canvas) {
         String dayString;
+        int selectedPoint[] = new int[2];
         int monthDays = CalendarUtils.getMonthDays(mSelYear, mSelMonth);
         int weekNumber = CalendarUtils.getFirstDayWeek(mSelYear, mSelMonth);
         for (int day = 0; day < monthDays; day++) {
@@ -271,6 +263,8 @@ public class MonthView extends View {
             //            drawHintCircle(row, column, day + 1, canvas);
             drawCalendar(row, column, day + 1, canvas);
             if (dayString.equals(String.valueOf(mSelDay))) {
+                selectedPoint[0] = row;
+                selectedPoint[1] = column;
                 mPaint.setColor(mSelectDayColor);
             } else if (dayString.equals(String.valueOf(mCurrDay)) && mCurrDay != mSelDay && mCurrMonth == mSelMonth && mCurrYear == mSelYear) {
                 mPaint.setColor(mCurrentDayColor);
@@ -280,6 +274,7 @@ public class MonthView extends View {
             canvas.drawText(dayString, startX, startY, mPaint);
             mHolidayOrLunarText[row][column] = CalendarUtils.getHolidayFromSolar(mSelYear, mSelMonth, mDaysText[row][column]);
         }
+        return selectedPoint;
     }
 
     private void drawNextMonth(Canvas canvas) {
@@ -314,7 +309,7 @@ public class MonthView extends View {
      *
      * @param canvas
      */
-    private void drawLunarText(Canvas canvas) {
+    private void drawLunarText(Canvas canvas, int[] selected) {
         if (mIsShowLunar) {
             int firstYear, firstMonth, firstDay;
             int weekNumber = CalendarUtils.getFirstDayWeek(mSelYear, mSelMonth);
@@ -371,6 +366,9 @@ public class MonthView extends View {
                     dayString = LunarCalendarUtils.getLunarDayString(day);
                     mLunarPaint.setColor(mLunarTextColor);
                 }
+                if (selected[0] == row && selected[1] == column) {
+                    mLunarPaint.setColor(mSelectDayColor);
+                }
                 int startX = (int) (mColumnSize * column + (mColumnSize - mLunarPaint.measureText(dayString)) / 2);
                 int startY = (int) (mRowSize * row + mRowSize * 0.72 - (mLunarPaint.ascent() + mLunarPaint.descent()) / 2);
                 canvas.drawText(dayString, startX, startY, mLunarPaint);
@@ -407,6 +405,7 @@ public class MonthView extends View {
      * @param canvas
      */
     private void drawCalendar(int row, int column, int day, Canvas canvas) {
+        List<CalendarBean> mCalendarBeen = ScheduleLayout.getCalendarBeen();
         if (mCalendarBeen == null || mCalendarBeen.size() == 0)
             return;
         if (mCalendarBeen.get(0).getType() == CalendarBean.KEY_TYPE_NUMBER)//绘制数字
@@ -420,6 +419,7 @@ public class MonthView extends View {
      */
     private void drawCalendarState(int row, int column, int day, Canvas canvas) {
         Paint paint = new Paint();
+        List<CalendarBean> mCalendarBeen = ScheduleLayout.getCalendarBeen();
         for (int i = 0; i < mCalendarBeen.size(); i++) {
             if (mCalendarBeen.get(i).getDay() == day &&
                     mCalendarBeen.get(i).getYear() == mSelYear &&
@@ -450,6 +450,7 @@ public class MonthView extends View {
      */
     private void drawCalendarNumber(int row, int column, int day, Canvas canvas) {
         Paint paint = new Paint();
+        List<CalendarBean> mCalendarBeen = ScheduleLayout.getCalendarBeen();
         for (int i = 0; i < mCalendarBeen.size(); i++) {
             if (mCalendarBeen.get(i).getDay() == day &&
                     mCalendarBeen.get(i).getYear() == mSelYear &&
@@ -457,7 +458,10 @@ public class MonthView extends View {
                 if (mCalendarBeen.get(i).getNumber() <= 0)
                     return;
                 // 画圆背景
-                paint.setColor(mHintCircleColor);
+                if (mCalendarBeen.get(i).getColor() != 0)
+                    paint.setColor(mCalendarBeen.get(i).getColor());
+                else
+                    paint.setColor(mHintCircleColor);
                 // 右上角位置
                 float x1 = (float) (mColumnSize * column + mColumnSize * 0.75);
                 float y1 = (float) (mRowSize * row + mRowSize * 0.25);

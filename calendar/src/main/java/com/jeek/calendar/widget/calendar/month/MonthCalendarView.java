@@ -8,6 +8,7 @@ import android.util.SparseArray;
 
 import com.jeek.calendar.library.R;
 import com.jeek.calendar.widget.calendar.OnCalendarClickListener;
+import com.jeek.calendar.widget.calendar.OnCalendarLongClickListener;
 
 import java.util.Calendar;
 
@@ -18,6 +19,7 @@ public class MonthCalendarView extends ViewPager implements OnMonthClickListener
 
     private MonthAdapter mMonthAdapter;
     private OnCalendarClickListener mOnCalendarClickListener;
+    private OnCalendarLongClickListener mOnCalendarLongClickListener;
 
     public MonthCalendarView(Context context) {
         this(context, null);
@@ -98,10 +100,15 @@ public class MonthCalendarView extends ViewPager implements OnMonthClickListener
 
     /**
      * 设置点击日期监听
+     *
      * @param onCalendarClickListener
      */
     public void setOnCalendarClickListener(OnCalendarClickListener onCalendarClickListener) {
         mOnCalendarClickListener = onCalendarClickListener;
+    }
+
+    public void setOnLongCalendarClickListener(OnCalendarLongClickListener onLongCalenerClickListener) {
+        mOnCalendarLongClickListener = onLongCalenerClickListener;
     }
 
     public SparseArray<MonthView> getMonthViews() {

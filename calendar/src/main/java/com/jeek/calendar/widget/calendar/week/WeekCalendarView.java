@@ -8,6 +8,7 @@ import android.util.SparseArray;
 
 import com.jeek.calendar.library.R;
 import com.jeek.calendar.widget.calendar.OnCalendarClickListener;
+import com.jeek.calendar.widget.calendar.OnCalendarLongClickListener;
 
 /**
  * Created by Jimmy on 2016/10/7 0007.
@@ -15,6 +16,7 @@ import com.jeek.calendar.widget.calendar.OnCalendarClickListener;
 public class WeekCalendarView extends ViewPager implements OnWeekClickListener {
 
     private OnCalendarClickListener mOnCalendarClickListener;
+    private OnCalendarLongClickListener mOnCalendarLongClickListener;
     private WeekAdapter mWeekAdapter;
 
     public WeekCalendarView(Context context) {
@@ -44,6 +46,12 @@ public class WeekCalendarView extends ViewPager implements OnWeekClickListener {
         }
     }
 
+    @Override
+    public void OnLongClickDate(int year, int month, int day) {
+        if (mOnCalendarLongClickListener != null)
+            mOnCalendarLongClickListener.onLongClickDate(year, month, day);
+    }
+
     private OnPageChangeListener mOnPageChangeListener = new OnPageChangeListener() {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -66,10 +74,15 @@ public class WeekCalendarView extends ViewPager implements OnWeekClickListener {
 
     /**
      * 设置点击日期监听
+     *
      * @param onCalendarClickListener
      */
     public void setOnCalendarClickListener(OnCalendarClickListener onCalendarClickListener) {
         mOnCalendarClickListener = onCalendarClickListener;
+    }
+
+    public void setOnLongCalendarClickListener(OnCalendarLongClickListener mOnCalendarLongClickListener) {
+        this.mOnCalendarLongClickListener = mOnCalendarLongClickListener;
     }
 
     public SparseArray<WeekView> getWeekViews() {

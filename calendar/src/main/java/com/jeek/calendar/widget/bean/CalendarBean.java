@@ -19,6 +19,7 @@ public class CalendarBean {
     private int type;
     private int number;
     private int state;
+    private int color;//右上角小圆圈背景色
 
     /**
      * TODO:　日历绘制bean
@@ -31,10 +32,23 @@ public class CalendarBean {
      * @param vlaue 值
      *              1: type==KEY_TYPE_NUMBER, vlaue是显示数字
      *              2: type==KEY_TYPE_TURE_OR_FALSE,
-     *                 value: KEY_STATE_TRUE,  √
-     *                        KEY_STATE_NORMAL   不显示
-     *                        KEY_STATE_FALSE   ×
+     *              value: KEY_STATE_TRUE,  √
+     *              KEY_STATE_NORMAL   不显示
+     *              KEY_STATE_FALSE   ×
      */
+    public CalendarBean(int year, int month, int day, int type, int vlaue, int color) {
+        this.year = year;
+        this.month = month - 1;
+        this.day = day;
+        this.type = type;
+        if (type == KEY_TYPE_NUMBER) {
+            this.number = vlaue;
+        } else if (type == KEY_TYPE_TURE_OR_FALSE) {
+            this.state = vlaue;
+        }
+        this.color = color;
+    }
+
     public CalendarBean(int year, int month, int day, int type, int vlaue) {
         this.year = year;
         this.month = month - 1;
@@ -45,6 +59,7 @@ public class CalendarBean {
         } else if (type == KEY_TYPE_TURE_OR_FALSE) {
             this.state = vlaue;
         }
+        this.color = 0;
     }
 
     public int getState() {
@@ -93,5 +108,13 @@ public class CalendarBean {
 
     public void setYear(int year) {
         this.year = year;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 }

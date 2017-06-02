@@ -23,6 +23,6 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(':calendar')
     compile 'com.android.support:appcompat-v7:25.2.0'
+    compile project(':calendar')
 }

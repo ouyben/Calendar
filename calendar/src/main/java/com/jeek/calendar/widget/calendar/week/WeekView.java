@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,6 +19,7 @@ import com.jeek.calendar.library.R;
 import com.jeek.calendar.widget.bean.CalendarBean;
 import com.jeek.calendar.widget.calendar.CalendarUtils;
 import com.jeek.calendar.widget.calendar.LunarCalendarUtils;
+import com.jeek.calendar.widget.calendar.schedule.ScheduleLayout;
 import com.jimmy.common.data.ScheduleDao;
 
 import org.joda.time.DateTime;
@@ -29,6 +31,8 @@ import java.util.List;
  * Created by Jimmy on 2016/10/7 0007.
  */
 public class WeekView extends View {
+
+    private final String TAG = getClass().getSimpleName();
 
     private static final int NUM_COLUMNS = 7;
     private Paint mPaint;
@@ -52,7 +56,7 @@ public class WeekView extends View {
     private boolean mIsShowLunar;
     private boolean mIsShowHint;
     private boolean mIsShowHolidayHint;
-    private DateTime mStartDate;
+    private DateTime mStartDate, mEndDate;
     private DisplayMetrics mDisplayMetrics;
     private OnWeekClickListener mOnWeekClickListener;
     private GestureDetector mGestureDetector;
@@ -60,7 +64,6 @@ public class WeekView extends View {
     private Bitmap mRestBitmap, mWorkBitmap;
 
     // 日程数据
-    private List<CalendarBean> mCalendarBeen;
     private int mScheCircleRadius = 20;// 日程背景圆半径
     private int mScheTxtSize = 28;//日程文字大小
 
@@ -84,15 +87,6 @@ public class WeekView extends View {
         initGestureDetector();
     }
 
-    /**
-     * TODO:设置日历标示数据
-     *
-     * @param calendarBeen
-     */
-    public void setCalendarList(List<CalendarBean> calendarBeen) {
-        mCalendarBeen = calendarBeen;
-        invalidate();
-    }
 
     private void initTaskHint(DateTime startDate, DateTime endDate) {
         if (mIsShowHint) {
@@ -105,12 +99,12 @@ public class WeekView extends View {
         if (array != null) {
             mSelectDayColor = array.getColor(R.styleable.WeekCalendarView_week_selected_text_color, Color.parseColor("#FFFFFF"));
             mSelectBGColor = array.getColor(R.styleable.WeekCalendarView_week_selected_circle_color, Color.parseColor("#E8E8E8"));
-            mSelectBGTodayColor = array.getColor(R.styleable.WeekCalendarView_week_selected_circle_today_color, Color.parseColor("#FF8594"));
+            mSelectBGTodayColor = array.getColor(R.styleable.WeekCalendarView_week_selected_circle_today_color, Color.parseColor("#27b5f3"));
             mNormalDayColor = array.getColor(R.styleable.WeekCalendarView_week_normal_text_color, Color.parseColor("#575471"));
-            mCurrentDayColor = array.getColor(R.styleable.WeekCalendarView_week_today_text_color, Color.parseColor("#FF8594"));
+            mCurrentDayColor = array.getColor(R.styleable.WeekCalendarView_week_today_text_color, Color.parseColor("#e53333"));
             mHintCircleColor = array.getColor(R.styleable.WeekCalendarView_week_hint_circle_color, Color.parseColor("#FE8595"));
             mLunarTextColor = array.getColor(R.styleable.WeekCalendarView_week_lunar_text_color, Color.parseColor("#ACA9BC"));
-            mHolidayTextColor = array.getColor(R.styleable.WeekCalendarView_week_holiday_color, Color.parseColor("#A68BFF"));
+            mHolidayTextColor = array.getColor(R.styleable.WeekCalendarView_week_holiday_color, Color.parseColor("#42bf88"));
             mDaySize = array.getInteger(R.styleable.WeekCalendarView_week_day_text_size, 13);
             mLunarTextSize = array.getInteger(R.styleable.WeekCalendarView_week_day_lunar_text_size, 8);
             mIsShowHint = array.getBoolean(R.styleable.WeekCalendarView_week_show_task_hint, true);
@@ -119,12 +113,12 @@ public class WeekView extends View {
         } else {
             mSelectDayColor = Color.parseColor("#FFFFFF");
             mSelectBGColor = Color.parseColor("#E8E8E8");
-            mSelectBGTodayColor = Color.parseColor("#FF8594");
+            mSelectBGTodayColor = Color.parseColor("#27b5f3");
             mNormalDayColor = Color.parseColor("#575471");
-            mCurrentDayColor = Color.parseColor("#FF8594");
+            mCurrentDayColor = Color.parseColor("#e53333");
             mHintCircleColor = Color.parseColor("#FE8595");
             mLunarTextColor = Color.parseColor("#ACA9BC");
-            mHolidayTextColor = Color.parseColor("#A68BFF");
+            mHolidayTextColor = Color.parseColor("#42bf88");
             mDaySize = 13;
             mDaySize = 8;
             mIsShowHint = true;
@@ -160,6 +154,7 @@ public class WeekView extends View {
         mCurrMonth = calendar.get(Calendar.MONTH);
         mCurrDay = calendar.get(Calendar.DATE);
         DateTime endDate = mStartDate.plusDays(7);
+        mEndDate = mStartDate.plusDays(7);
         if (mStartDate.getMillis() <= System.currentTimeMillis() && endDate.getMillis() > System.currentTimeMillis()) {
             if (mStartDate.getMonthOfYear() != endDate.getMonthOfYear()) {
                 if (mCurrDay < mStartDate.getDayOfMonth()) {
@@ -216,8 +211,8 @@ public class WeekView extends View {
     protected void onDraw(Canvas canvas) {
         initSize();
         clearData();
-        drawThisWeek(canvas);
-        drawLunarText(canvas);
+        int selected = drawThisWeek(canvas);
+        drawLunarText(canvas, selected);
         drawHoliday(canvas);
     }
 
@@ -225,16 +220,8 @@ public class WeekView extends View {
         mHolidayOrLunarText = new String[7];
     }
 
-    private void initSize() {
-        mColumnSize = getWidth() / NUM_COLUMNS;
-        mRowSize = getHeight();
-        mSelectCircleSize = (int) (mColumnSize / 2.8);
-        while (mSelectCircleSize > mRowSize / 2) {
-            mSelectCircleSize = (int) (mSelectCircleSize / 1.3);
-        }
-    }
-
-    private void drawThisWeek(Canvas canvas) {
+    private int drawThisWeek(Canvas canvas) {
+        int selected = 0;
         for (int i = 0; i < 7; i++) {
             DateTime date = mStartDate.plusDays(i);
             int day = date.getDayOfMonth();
@@ -251,9 +238,12 @@ public class WeekView extends View {
                 }
                 canvas.drawCircle((startRecX + endRecX) / 2, mRowSize / 2, mSelectCircleSize, mPaint);
             }
-//            drawHintCircle(i, day, canvas);
+            //            drawHintCircle(i, day, canvas);
+            Log.d(TAG, "drawThisWeek: mStartDate:" + mStartDate.getYear() + "-" + mStartDate.getMonthOfYear() + "-" + mStartDate.getDayOfMonth());
+            Log.d(TAG, "drawThisWeek: day:" + day);
             drawCalendar(i, day, canvas);
             if (day == mSelDay) {
+                selected = i;
                 mPaint.setColor(mSelectDayColor);
             } else if (date.getYear() == mCurrYear && date.getMonthOfYear() - 1 == mCurrMonth && day == mCurrDay && day != mSelDay && mCurrYear == mSelYear) {
                 mPaint.setColor(mCurrentDayColor);
@@ -263,15 +253,28 @@ public class WeekView extends View {
             canvas.drawText(dayString, startX, startY, mPaint);
             mHolidayOrLunarText[i] = CalendarUtils.getHolidayFromSolar(date.getYear(), date.getMonthOfYear() - 1, day);
         }
+        return selected;
     }
+
+    private void initSize() {
+        mColumnSize = getWidth() / NUM_COLUMNS;
+        mRowSize = getHeight();
+        mSelectCircleSize = (int) (mColumnSize / 2.8);
+        while (mSelectCircleSize > mRowSize / 2) {
+            mSelectCircleSize = (int) (mSelectCircleSize / 1.3);
+        }
+    }
+
     /**
      * TODO: 绘制日历标示
+     *
      * @param column
      * @param day
      * @param canvas
      */
     private void drawCalendar(int column, int day, Canvas canvas) {
-        if (mCalendarBeen == null|| mCalendarBeen.size() == 0)
+        List<CalendarBean> mCalendarBeen = ScheduleLayout.getCalendarBeen();
+        if (mCalendarBeen == null || mCalendarBeen.size() == 0)
             return;
         if (mCalendarBeen.get(0).getType() == CalendarBean.KEY_TYPE_NUMBER)//绘制数字
             drawCalendarNumber(column, day, canvas);
@@ -284,10 +287,10 @@ public class WeekView extends View {
      */
     private void drawCalendarState(int column, int day, Canvas canvas) {
         Paint paint = new Paint();
+        List<CalendarBean> mCalendarBeen = ScheduleLayout.getCalendarBeen();
         for (int i = 0; i < mCalendarBeen.size(); i++) {
-            if (mCalendarBeen.get(i).getDay() == day &&
-                    mCalendarBeen.get(i).getYear() == mSelYear &&
-                    mCalendarBeen.get(i).getMonth() == mSelMonth) {
+            if (isContains(mCalendarBeen.get(i).getYear(), mCalendarBeen.get(i).getMonth(), mCalendarBeen.get(i).getDay())
+                    && mCalendarBeen.get(i).getDay() == day) {
                 if (mCalendarBeen.get(i).getState() == CalendarBean.KEY_STATE_NORMAL)
                     return;
                 // 右上角位置
@@ -296,27 +299,45 @@ public class WeekView extends View {
                 if (mCalendarBeen.get(i).getState() == CalendarBean.KEY_STATE_TRUE)//为true
                 {
                     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_true);
-                    canvas.drawBitmap(bitmap, x1,y1, paint);
+                    canvas.drawBitmap(bitmap, x1, y1, paint);
                 }
-                if (mCalendarBeen.get(i).getState() == CalendarBean.KEY_STATE_FALSE){
+                if (mCalendarBeen.get(i).getState() == CalendarBean.KEY_STATE_FALSE) {
                     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_false);
-                    canvas.drawBitmap(bitmap, x1,y1, paint);
+                    canvas.drawBitmap(bitmap, x1, y1, paint);
                 }
             }
         }
 
     }
 
+    private boolean isContains(int year, int month, int day) {
+        boolean isContain = false;
+        DateTime date = new DateTime(year, month + 1, day, 0, 0);
+        Log.d(TAG, "isContains: date: " + year + "-" + (month + 1) + "-" + day);
+        Log.d(TAG, "isContains: start: " + mStartDate.getYear() + "-" + mStartDate.getMonthOfYear() + "-" + mStartDate.getDayOfMonth());
+        Log.d(TAG, "isContains: end: " + mEndDate.getYear() + "-" + mEndDate.getMonthOfYear() + "-" + mEndDate.getDayOfMonth());
+
+        if (date.getMillis() >= mStartDate.getMillis() && date.getMillis() < mEndDate.getMillis()) {
+            isContain = true;
+        }
+        Log.d(TAG, "isContains: " + isContain);
+        return isContain;
+    }
 
     private void drawCalendarNumber(int column, int day, Canvas canvas) {
+        Log.d(TAG, "drawCalendarNumber: day:" + day);
+        List<CalendarBean> mCalendarBeen = ScheduleLayout.getCalendarBeen();
         Paint paint = new Paint();
         for (int i = 0; i < mCalendarBeen.size(); i++) {
-            if (mCalendarBeen.get(i).getDay() == day &&
-                    mCalendarBeen.get(i).getYear() == mSelYear &&
-                    mCalendarBeen.get(i).getMonth() == mSelMonth) {
+            if (isContains(mCalendarBeen.get(i).getYear(), mCalendarBeen.get(i).getMonth(), mCalendarBeen.get(i).getDay())
+                    && mCalendarBeen.get(i).getDay() == day) {
+                Log.d(TAG, "drawCalendarNumber: isContains:" + mCalendarBeen.get(i).getYear() + "-" + mCalendarBeen.get(i).getMonth() + "-" + mCalendarBeen.get(i).getDay());
                 if (mCalendarBeen.get(i).getNumber() <= 0)
                     return;
-                paint.setColor(mHintCircleColor);
+                if (mCalendarBeen.get(i).getColor() != 0)
+                    paint.setColor(mCalendarBeen.get(i).getColor());
+                else
+                    paint.setColor(mHintCircleColor);
                 // 右上角位置
                 float x1 = (float) (mColumnSize * column + mColumnSize * 0.75);
                 float y1 = (float) (mRowSize * 0.25);
@@ -336,7 +357,7 @@ public class WeekView extends View {
      *
      * @param canvas
      */
-    private void drawLunarText(Canvas canvas) {
+    private void drawLunarText(Canvas canvas, int selected) {
         if (mIsShowLunar) {
             LunarCalendarUtils.Lunar lunar = LunarCalendarUtils.solarToLunar(new LunarCalendarUtils.Solar(mStartDate.getYear(), mStartDate.getMonthOfYear(), mStartDate.getDayOfMonth()));
             int leapMonth = LunarCalendarUtils.leapMonth(lunar.lunarYear);
@@ -364,6 +385,9 @@ public class WeekView extends View {
                 if ("".equals(dayString)) {
                     dayString = LunarCalendarUtils.getLunarDayString(day);
                     mLunarPaint.setColor(mLunarTextColor);
+                }
+                if (i == selected) {
+                    mLunarPaint.setColor(mSelectDayColor);
                 }
                 int startX = (int) (mColumnSize * i + (mColumnSize - mLunarPaint.measureText(dayString)) / 2);
                 int startY = (int) (mRowSize * 0.72 - (mLunarPaint.ascent() + mLunarPaint.descent()) / 2);
